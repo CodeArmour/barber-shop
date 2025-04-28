@@ -1,0 +1,66 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model Barber {
+  id           Int              @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  phone        String?
+  bio          String?
+  imageUrl     String?
+  isActive     Boolean       @default(true)
+  appointments Appointment[]
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("barbers")
+}
+
+model Service {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  duration     Int           // duration in minutes
+  price        Decimal       @db.Decimal(10, 2)
+  imageUrl     String?
+  isActive     Boolean       @default(true)
+  appointments Appointment[]
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("services")
+}
+
+model Appointment {
+  id            Int               @id @default(autoincrement())
+  date          DateTime          @db.Date
+  time          String
+  barber        Barber            @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  barberId      Int               @map("barber_id")
+  service       Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId     Int               @map("service_id")
+  customerName  String            @map("customer_name")
+  customerEmail String            @map("customer_email")
+  customerPhone String?           @map("customer_phone")
+  status        AppointmentStatus @default(PENDING)
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("appointments")
+}
