@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { startTransition, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Lock, User, ArrowRight } from "lucide-react"
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { signIn } from "@/utils/auth-utils"
+import { signInAdmin } from "@/actions/sign-in-actions"
 
 export function SignInForm() {
   const router = useRouter()
@@ -41,13 +41,16 @@ export function SignInForm() {
     }
 
     try {
-      const success = await signIn(formData.email, formData.password)
-
-      if (success) {
-        router.push("/admin")
-      } else {
-        setError("Invalid email or password")
-      }
+      // An async operation can block UI updates, but startTransition allows to prioritize state changes and keep the UI responsive while the async function is running
+      startTransition(async () => {
+        const res = await signInAdmin(formData.email, formData.password)
+  
+        if (res.success) {
+          router.push("/admin")
+        } else {
+          setError(res.error || "Login failed")
+        }
+      })
     } catch (err) {
       setError("An error occurred. Please try again.")
       console.error("Login error:", err)

@@ -7,7 +7,8 @@ import { Menu, Scissors, LogOut } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { signOut, getUser } from "@/utils/auth-utils"
+import { getUser } from "@/utils/auth-utils"
+import { signOut } from "@/utils/auth-server-utils"
 
 type HeaderProps = {
   isAdmin?: boolean
